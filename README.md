@@ -134,6 +134,7 @@ curl 'http://localhost:8080/api/compliance-reports/daily'
 - [Security boundaries](docs/security-boundaries.md)
 - [Test scenarios](docs/test-scenarios.md)
 - [English client walkthrough](docs/client-walkthrough-en.md)
+- [中文详细路线图](docs/roadmap-zh.md)
 
 ## 中文简介
 
@@ -143,10 +144,13 @@ BankBridge 是一个使用合成数据构建的跨境支付与合规处理教学
 
 ## Roadmap
 
-- `v0.2`: RabbitMQ processing, retries, timeouts, and dead-letter queues
-- `v0.3`: authentication, role-based access, and report export
-- `v0.4`: lightweight operations dashboard and observability
-- `v1.0`: deployment guide, performance evidence, and recorded demo
+- `v0.2`: RabbitMQ, transactional outbox, idempotent consumers, retries, and dead-letter recovery
+- `v0.3`: authentication, role-based access, searchable audit data, and report export
+- `v0.4`: lightweight operations dashboard, structured logs, metrics, and Grafana
+- `v0.5`: performance baselines, resilience tests, deployment, and supply-chain checks
+- `v1.0`: stable API, bilingual portfolio documentation, reproducible demo, and recorded walkthrough
+
+The detailed milestones, test requirements, deliverables, acceptance criteria, and suggested ten-week schedule are documented in the [Chinese project roadmap](docs/roadmap-zh.md).
 
 ## License
 
