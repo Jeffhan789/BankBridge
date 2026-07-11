@@ -1,0 +1,10 @@
+{
+  "messageId": "PAY-DEMO-ACCEPT-001",
+  "debtorAccount": "TEST-DEBTOR-001",
+  "creditorAccount": "TEST-CREDITOR-001",
+  "amount": 12500.00,
+  "currency": "CNY",
+  "destinationCountry": "SG",
+  "purposeCode": "GOODS",
+  "requestedExecutionDate": "2099-01-01"
+}

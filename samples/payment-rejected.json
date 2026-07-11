@@ -1,0 +1,10 @@
+{
+  "messageId": "PAY-DEMO-REJECT-001",
+  "debtorAccount": "TEST-DEBTOR-001",
+  "creditorAccount": "TEST-BLOCKED-001",
+  "amount": 500.00,
+  "currency": "CNY",
+  "destinationCountry": "GB",
+  "purposeCode": "SERVICES",
+  "requestedExecutionDate": "2099-01-01"
+}
