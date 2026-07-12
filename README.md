@@ -1,4 +1,4 @@
-# BankBridge
+# BankBridge（汇桥）
 
 > English first. 中文版见后文。
 
@@ -11,13 +11,13 @@
 
 **A cross-border payment, reconciliation, and compliance-processing sandbox for backend engineering practice.**
 
-BankBridge models how a payment instruction moves from intake to validation, synthetic compliance screening, double-entry posting, settlement, reconciliation, and reporting. It focuses on the engineering work behind reliable financial integrations: state transitions, idempotency, batch isolation, auditable decisions, database migrations, API contracts, and automated tests.
+BankBridge（汇桥）models how a payment instruction moves from intake to validation, synthetic compliance screening, double-entry posting, settlement, reconciliation, and reporting. It focuses on the engineering work behind reliable financial integrations: state transitions, idempotency, batch isolation, auditable decisions, database migrations, API contracts, and automated tests.
 
 > **Independent educational project.** This sandbox uses synthetic data only. It is not affiliated with any bank, payment network, regulator, or financial technology company. It does not connect to real financial infrastructure or implement an official regulatory message format.
 
 ## English Overview
 
-BankBridge is a portfolio-ready backend engineering project that models a complete synthetic payment-processing lifecycle. It is designed to demonstrate reliable service design rather than a simple CRUD application: requests move through validation, synthetic compliance screening, double-entry posting, settlement, reconciliation, reporting, and auditable state history.
+BankBridge（汇桥）is a portfolio-ready backend engineering project that models a complete synthetic payment-processing lifecycle. It is designed to demonstrate reliable service design rather than a simple CRUD application: requests move through validation, synthetic compliance screening, double-entry posting, settlement, reconciliation, reporting, and auditable state history.
 
 The current `v0.2.0` implementation introduces asynchronous settlement through RabbitMQ, transactional outbox, idempotent consumers, exponential-backoff retries, and dead-letter recovery. The synchronous validation and screening boundary remains deterministic so the API contract and tests are stable.
 
@@ -180,7 +180,7 @@ curl 'http://localhost:8080/api/compliance-reports/daily'
 
 ## 中文项目介绍
 
-BankBridge 是一个面向后端工程实践和求职展示的跨境支付、对账与模拟合规处理沙盒。项目使用 Java 21、Spring Boot、MySQL、Flyway、Docker 和自动化测试，完整建模一笔合成支付指令从接收、校验、规则筛查、复式记账、结算到日终对账与审计追踪的处理过程。
+BankBridge（汇桥）是一个面向后端工程实践和求职展示的跨境支付、对账与模拟合规处理沙盒。项目使用 Java 21、Spring Boot、MySQL、Flyway、Docker 和自动化测试，完整建模一笔合成支付指令从接收、校验、规则筛查、复式记账、结算到日终对账与审计追踪的处理过程。
 
 项目重点不在普通 CRUD 页面，而在可靠后端系统中的关键工程问题：
 
@@ -213,13 +213,7 @@ docker compose up --build
 
 ## Roadmap
 
-- ~~`v0.2`: RabbitMQ, transactional outbox, idempotent consumers, retries, and dead-letter recovery~~ ✅
-- `v0.3`: authentication, role-based access, searchable audit data, and report export
-- `v0.4`: lightweight operations dashboard, structured logs, metrics, and Grafana
-- `v0.5`: performance baselines, resilience tests, deployment, and supply-chain checks
-- `v1.0`: stable API, bilingual portfolio documentation, reproducible demo, and recorded walkthrough
-
-- `v0.2`: RabbitMQ, transactional outbox, idempotent consumers, retries, and dead-letter recovery
+- `v0.2`: RabbitMQ, transactional outbox, idempotent consumers, retries, and dead-letter recovery ✅
 - `v0.3`: authentication, role-based access, searchable audit data, and report export
 - `v0.4`: lightweight operations dashboard, structured logs, metrics, and Grafana
 - `v0.5`: performance baselines, resilience tests, deployment, and supply-chain checks

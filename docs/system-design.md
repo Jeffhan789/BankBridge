@@ -2,7 +2,7 @@
 
 ## Purpose
 
-BankBridge is an independent educational sandbox for studying the backend workflow behind cross-border payment integration. It uses synthetic actors and data and intentionally stops before any real network, official message format, or regulated workflow.
+BankBridge（汇桥）is an independent educational sandbox for studying the backend workflow behind cross-border payment integration. It uses synthetic actors and data and intentionally stops before any real network, official message format, or regulated workflow.
 
 ## Components
 
