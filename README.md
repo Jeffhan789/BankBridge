@@ -1,5 +1,9 @@
 # BankBridge
 
+> English first. 中文版见后文。
+
+[English](#english-overview) | [中文](#中文项目介绍)
+
 [![CI](https://github.com/Jeffhan789/BankBridge/actions/workflows/ci.yml/badge.svg)](https://github.com/Jeffhan789/BankBridge/actions/workflows/ci.yml)
 [![Java 21](https://img.shields.io/badge/Java-21-007396)](https://openjdk.org/projects/jdk/21/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4-6DB33F)](https://spring.io/projects/spring-boot)
@@ -10,6 +14,12 @@
 BankBridge models how a payment instruction moves from intake to validation, synthetic compliance screening, double-entry posting, settlement, reconciliation, and reporting. It focuses on the engineering work behind reliable financial integrations: state transitions, idempotency, batch isolation, auditable decisions, database migrations, API contracts, and automated tests.
 
 > **Independent educational project.** This sandbox uses synthetic data only. It is not affiliated with any bank, payment network, regulator, or financial technology company. It does not connect to real financial infrastructure or implement an official regulatory message format.
+
+## English Overview
+
+BankBridge is a portfolio-ready backend engineering project that models a complete synthetic payment-processing lifecycle. It is designed to demonstrate reliable service design rather than a simple CRUD application: requests move through validation, synthetic compliance screening, double-entry posting, settlement, reconciliation, reporting, and auditable state history.
+
+The current `v0.1.0` implementation is synchronous and deterministic so that each state transition can be reproduced, inspected, and tested. Planned asynchronous messaging, observability, and resilience work is listed separately in the roadmap and is not presented as already implemented.
 
 ## What the project demonstrates
 
@@ -136,11 +146,36 @@ curl 'http://localhost:8080/api/compliance-reports/daily'
 - [English client walkthrough](docs/client-walkthrough-en.md)
 - [中文详细路线图](docs/roadmap-zh.md)
 
-## 中文简介
+## 中文项目介绍
 
-BankBridge 是一个使用合成数据构建的跨境支付与合规处理教学沙盒。项目用 Java、Spring Boot 和 MySQL 展示支付状态流转、幂等控制、模拟规则检查、复式记账、批量处理、日终对账和审计日志。它不连接任何真实银行或支付网络，也不实现正式监管报文。
+BankBridge 是一个面向后端工程实践和求职展示的跨境支付、对账与模拟合规处理沙盒。项目使用 Java 21、Spring Boot、MySQL、Flyway、Docker 和自动化测试，完整建模一笔合成支付指令从接收、校验、规则筛查、复式记账、结算到日终对账与审计追踪的处理过程。
+
+项目重点不在普通 CRUD 页面，而在可靠后端系统中的关键工程问题：
+
+- 使用唯一业务键实现重复请求保护与幂等控制。
+- 使用明确状态机记录支付生命周期和不可变状态历史。
+- 使用金额相等的借方与贷方分录验证复式记账平衡。
+- 对 CSV 批量任务进行逐行错误隔离，避免单条失败影响整批处理。
+- 使用 Flyway 管理数据库版本，并通过 OpenAPI、Docker 和 GitHub Actions 提供可复现的开发与验证流程。
+- 使用合成数据和模拟规则控制安全边界，不连接真实银行、支付网络或监管基础设施。
+
+当前 `v0.1.0` 采用同步、确定性的处理方式，便于复现、检查和测试每一次状态变化。RabbitMQ、事务发件箱、重试、死信队列、监控和性能基线属于后续路线图，不作为当前已经实现的能力展示。
 
 该项目适合用于 Java 后端、金融科技、测试开发、系统实施、解决方案和英文技术交付岗位的作品展示。
+
+### 三分钟演示
+
+```bash
+docker compose up --build
+```
+
+服务启动后可访问：
+
+- Swagger UI：<http://localhost:8080/swagger-ui>
+- OpenAPI JSON：<http://localhost:8080/api-docs>
+- 健康检查：<http://localhost:8080/health>
+
+建议依次演示成功结算、模拟合规拒绝和重复请求冲突三条路径。对应请求样例位于 `samples/`，完整命令见上方英文演示章节。
 
 ## Roadmap
 
