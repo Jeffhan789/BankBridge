@@ -1,4 +1,18 @@
 services:
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    environment:
+      RABBITMQ_DEFAULT_USER: bankbridge
+      RABBITMQ_DEFAULT_PASS: bankbridge
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
   mysql:
     image: mysql:8.4
     environment:
@@ -26,6 +40,8 @@ services:
       - "8080:8080"
     depends_on:
       mysql:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
 
 volumes:

@@ -1,18 +1,25 @@
 package io.bankbridge;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.bankbridge.api.PaymentModels;
+import io.bankbridge.messaging.SettlementMessage;
+import io.bankbridge.service.PaymentSettlementWorker;
 import org.junit.jupiter.api.Test;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -29,14 +36,39 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class PaymentApiIntegrationTest {
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper objectMapper;
+    @Autowired PaymentSettlementWorker worker;
+
+    @MockBean RabbitAdmin rabbitAdmin;
+    @MockBean RabbitTemplate rabbitTemplate;
 
     @Test
-    void acceptedPaymentSettlesWithBalancedLedgerAndHistory() throws Exception {
+    void acceptedPaymentIsAcceptedAndSettlesAsynchronously() throws Exception {
         PaymentModels.CreatePaymentRequest request = validRequest("ACCEPT");
-        mockMvc.perform(post("/api/payments")
+        MvcResult postResult = mockMvc.perform(post("/api/payments")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsBytes(request)))
                 .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.status").value("ACCEPTED"))
+                .andExpect(jsonPath("$.ledgerEntries", hasSize(0)))
+                .andExpect(jsonPath("$.statusHistory", hasSize(4)))
+                .andReturn();
+
+        JsonNode created = objectMapper.readTree(postResult.getResponse().getContentAsString());
+        String paymentId = created.get("id").asText();
+
+        // Simulate async settlement via the worker
+        worker.handleSettlement(new SettlementMessage(
+                paymentId,
+                request.messageId(),
+                request.debtorAccount(),
+                request.creditorAccount(),
+                request.amount(),
+                request.currency(),
+                Instant.now()
+        ));
+
+        mockMvc.perform(get("/api/payments/" + paymentId))
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("SETTLED"))
                 .andExpect(jsonPath("$.ledgerEntries", hasSize(2)))
                 .andExpect(jsonPath("$.ledgerEntries[0].entryType").value("DEBIT"))
@@ -112,11 +144,27 @@ class PaymentApiIntegrationTest {
     }
 
     @Test
-    void reconciliationRemainsBalanced() throws Exception {
-        mockMvc.perform(post("/api/payments")
+    void reconciliationRemainsBalancedAfterAsyncSettlement() throws Exception {
+        PaymentModels.CreatePaymentRequest request = validRequest("RECON");
+        MvcResult postResult = mockMvc.perform(post("/api/payments")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(validRequest("RECON"))))
-                .andExpect(status().isCreated());
+                        .content(objectMapper.writeValueAsBytes(request)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        JsonNode created = objectMapper.readTree(postResult.getResponse().getContentAsString());
+        String paymentId = created.get("id").asText();
+
+        worker.handleSettlement(new SettlementMessage(
+                paymentId,
+                request.messageId(),
+                request.debtorAccount(),
+                request.creditorAccount(),
+                request.amount(),
+                request.currency(),
+                Instant.now()
+        ));
+
         String response = mockMvc.perform(get("/api/reconciliation/daily")
                         .param("date", LocalDate.now().toString()))
                 .andExpect(status().isOk())

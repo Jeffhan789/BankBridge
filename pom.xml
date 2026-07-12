@@ -13,7 +13,7 @@
 
     <groupId>io.bankbridge</groupId>
     <artifactId>bankbridge</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
     <name>BankBridge</name>
     <description>Cross-border payment and compliance processing sandbox</description>
 
@@ -53,6 +53,11 @@
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>${springdoc.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
         </dependency>
 
         <dependency>

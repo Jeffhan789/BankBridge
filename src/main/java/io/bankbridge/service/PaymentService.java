@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Locale;
 
 @Service
@@ -22,19 +21,22 @@ public class PaymentService {
     private final ScreeningResultRepository screeningResultRepository;
     private final LedgerEntryRepository ledgerRepository;
     private final AuditEventRepository auditRepository;
+    private final OutboxPublisher outboxPublisher;
 
     public PaymentService(PaymentInstructionRepository paymentRepository,
                           PaymentStatusEventRepository statusEventRepository,
                           ScreeningRuleRepository ruleRepository,
                           ScreeningResultRepository screeningResultRepository,
                           LedgerEntryRepository ledgerRepository,
-                          AuditEventRepository auditRepository) {
+                          AuditEventRepository auditRepository,
+                          OutboxPublisher outboxPublisher) {
         this.paymentRepository = paymentRepository;
         this.statusEventRepository = statusEventRepository;
         this.ruleRepository = ruleRepository;
         this.screeningResultRepository = screeningResultRepository;
         this.ledgerRepository = ledgerRepository;
         this.auditRepository = auditRepository;
+        this.outboxPublisher = outboxPublisher;
     }
 
     @Transactional
@@ -69,9 +71,7 @@ public class PaymentService {
         }
 
         transition(payment, PaymentStatus.ACCEPTED, "Payment accepted for processing");
-        transition(payment, PaymentStatus.PROCESSING, "Settlement simulation started");
-        createBalancedLedger(payment);
-        transition(payment, PaymentStatus.SETTLED, "Synthetic settlement completed");
+        outboxPublisher.createOutboxEvent(payment);
         return response(payment);
     }
 
@@ -127,25 +127,6 @@ public class PaymentService {
             case PURPOSE_CODE -> payment.getPurposeCode();
         };
         return actual.equalsIgnoreCase(rule.getMatchValue());
-    }
-
-    private void createBalancedLedger(PaymentInstruction payment) {
-        List<LedgerEntry> entries = List.of(
-                new LedgerEntry(payment.getId(), "CUSTOMER_SETTLEMENT", EntryType.DEBIT,
-                        payment.getAmount(), payment.getCurrency()),
-                new LedgerEntry(payment.getId(), "CLEARING_PAYABLE", EntryType.CREDIT,
-                        payment.getAmount(), payment.getCurrency()));
-        BigDecimal debits = entries.stream().filter(e -> e.getEntryType() == EntryType.DEBIT)
-                .map(LedgerEntry::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal credits = entries.stream().filter(e -> e.getEntryType() == EntryType.CREDIT)
-                .map(LedgerEntry::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
-        if (debits.compareTo(credits) != 0) {
-            transition(payment, PaymentStatus.FAILED, "Ledger entries are not balanced");
-            throw new IllegalStateException("Debit and credit totals must be equal");
-        }
-        ledgerRepository.saveAll(entries);
-        auditRepository.save(new AuditEvent("PAYMENT", payment.getId(), "LEDGER_POSTED",
-                "Balanced synthetic ledger entries created"));
     }
 
     private void transition(PaymentInstruction payment, PaymentStatus status, String reason) {

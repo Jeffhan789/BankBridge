@@ -12,3 +12,10 @@ spring:
     enabled: true
   main:
     allow-bean-definition-overriding: true
+  rabbitmq:
+    listener:
+      simple:
+        auto-startup: false
+bankbridge:
+  outbox:
+    poll-ms: 600000

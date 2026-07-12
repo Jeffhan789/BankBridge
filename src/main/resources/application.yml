@@ -5,6 +5,20 @@ spring:
     url: ${DB_URL:jdbc:mysql://localhost:3306/bankbridge?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
     username: ${DB_USERNAME:bankbridge}
     password: ${DB_PASSWORD:bankbridge}
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:bankbridge}
+    password: ${RABBITMQ_PASS:bankbridge}
+    listener:
+      simple:
+        retry:
+          enabled: true
+          initial-interval: 1000
+          multiplier: 2
+          max-attempts: 5
+          max-interval: 30000
+        default-requeue-rejected: false
   jpa:
     hibernate:
       ddl-auto: validate
