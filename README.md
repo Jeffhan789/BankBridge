@@ -19,7 +19,7 @@ BankBridge（汇桥）models how a payment instruction moves from intake to vali
 
 BankBridge（汇桥）is a portfolio-ready backend engineering project that models a complete synthetic payment-processing lifecycle. It is designed to demonstrate reliable service design rather than a simple CRUD application: requests move through validation, synthetic compliance screening, double-entry posting, settlement, reconciliation, reporting, and auditable state history.
 
-The current `v0.2.0` implementation introduces asynchronous settlement through RabbitMQ, transactional outbox, idempotent consumers, exponential-backoff retries, and dead-letter recovery. The synchronous validation and screening boundary remains deterministic so the API contract and tests are stable.
+The current `v0.3.0` implementation adds JWT authentication, RBAC role-based access control, data masking, and audit enhancement on top of the v0.2.0 asynchronous settlement foundation.
 
 ## What the project demonstrates
 
@@ -71,7 +71,7 @@ flowchart LR
     MQ --> DLQ["Dead Letter Queue"]
 ```
 
-Version `0.2.0` splits processing at `ACCEPTED`: validation and screening remain synchronous and deterministic; settlement runs asynchronously through RabbitMQ with retries and dead-letter recovery.
+Version `0.3.0` builds on the v0.2.0 async architecture and adds authentication, authorization, data masking, and enhanced audit tracking.
 
 ```mermaid
 flowchart LR
