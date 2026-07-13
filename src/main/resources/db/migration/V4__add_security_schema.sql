@@ -1,0 +1,13 @@
+CREATE TABLE users (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(30) NOT NULL,
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    updated_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)
+);
+
+ALTER TABLE audit_events ADD COLUMN actor_username VARCHAR(50);
+ALTER TABLE audit_events ADD COLUMN actor_role VARCHAR(30);
+CREATE INDEX idx_audit_actor ON audit_events(actor_username);
