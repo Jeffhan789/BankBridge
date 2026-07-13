@@ -78,7 +78,7 @@ public class PaymentSettlementWorker {
 
             ledgerRepository.saveAll(entries);
             auditRepository.save(new AuditEvent("PAYMENT", payment.getId(), "LEDGER_POSTED",
-                    "Balanced synthetic ledger entries created"));
+                    "Balanced synthetic ledger entries created", "SYSTEM", "SYSTEM"));
 
             // Transition to SETTLED
             transition(payment, PaymentStatus.SETTLED, "Synthetic settlement completed");
@@ -92,6 +92,12 @@ public class PaymentSettlementWorker {
     }
 
     private void transition(PaymentInstruction payment, PaymentStatus status, String reason) {
+        payment.setStatus(status, reason);
+        paymentRepository.save(payment);
+        statusEventRepository.save(new PaymentStatusEvent(payment.getId(), status, reason));
+        auditRepository.save(new AuditEvent("PAYMENT", payment.getId(), "STATUS_CHANGED",
+                status.name() + ": " + reason, "SYSTEM", "SYSTEM"));
+    }
         payment.setStatus(status, reason);
         paymentRepository.save(payment);
         statusEventRepository.save(new PaymentStatusEvent(payment.getId(), status, reason));

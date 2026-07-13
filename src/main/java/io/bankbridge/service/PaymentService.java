@@ -6,6 +6,9 @@ import io.bankbridge.api.PaymentModels;
 import io.bankbridge.api.ResourceNotFoundException;
 import io.bankbridge.domain.*;
 import io.bankbridge.repository.*;
+import io.bankbridge.util.MaskingUtils;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -133,8 +136,13 @@ public class PaymentService {
         payment.setStatus(status, reason);
         paymentRepository.save(payment);
         statusEventRepository.save(new PaymentStatusEvent(payment.getId(), status, reason));
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String actorUsername = auth != null ? auth.getName() : null;
+        String actorRole = auth != null && !auth.getAuthorities().isEmpty()
+                ? auth.getAuthorities().iterator().next().getAuthority().replace("ROLE_", "")
+                : null;
         auditRepository.save(new AuditEvent("PAYMENT", payment.getId(), "STATUS_CHANGED",
-                status.name() + ": " + reason));
+                status.name() + ": " + reason, actorUsername, actorRole));
     }
 
     private PaymentModels.PaymentResponse response(PaymentInstruction payment) {
@@ -149,11 +157,25 @@ public class PaymentService {
                 .map(entry -> new PaymentModels.LedgerEntryView(entry.getLedgerAccount(),
                         entry.getEntryType(), entry.getAmount(), entry.getCurrency()))
                 .toList();
+
+        boolean isAdmin = isCurrentUserAdmin();
+        String debtorAccount = isAdmin ? payment.getDebtorAccount() : MaskingUtils.maskAccount(payment.getDebtorAccount());
+        String creditorAccount = isAdmin ? payment.getCreditorAccount() : MaskingUtils.maskAccount(payment.getCreditorAccount());
+
         return new PaymentModels.PaymentResponse(payment.getId(), payment.getMessageId(),
-                payment.getDebtorAccount(), payment.getCreditorAccount(), payment.getAmount(),
+                debtorAccount, creditorAccount, payment.getAmount(),
                 payment.getCurrency(), payment.getDestinationCountry(), payment.getPurposeCode(),
                 payment.getRequestedExecutionDate(), payment.getStatus(), payment.getStatusReason(),
                 payment.getCreatedAt(), history, screening, ledger);
+    }
+
+    private boolean isCurrentUserAdmin() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return false;
+        }
+        return auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
     }
 
     private record ScreeningDecision(PaymentStatus status, String ruleId, String reason) {}

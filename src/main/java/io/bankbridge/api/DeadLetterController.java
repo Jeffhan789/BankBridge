@@ -7,7 +7,29 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.QueueInformation;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/dead-letters")
+public class DeadLetterController {
+
+    private static final Logger log = LoggerFactory.getLogger(DeadLetterController.class);
+
+    private final RabbitAdmin rabbitAdmin;
+    private final RabbitTemplate rabbitTemplate;
+
+    public DeadLetterController(RabbitAdmin rabbitAdmin, RabbitTemplate rabbitTemplate) {
+        this.rabbitAdmin = rabbitAdmin;
+        this.rabbitTemplate = rabbitTemplate;
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping
+    public DeadLetterModels.DeadLetterQueueInfo getDeadLetterQueueInfo() {
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
