@@ -19,3 +19,6 @@ spring:
 bankbridge:
   outbox:
     poll-ms: 600000
+  jwt:
+    secret: test-jwt-secret-key-for-unit-tests-only-do-not-use-in-production
+    expiration-ms: 3600000
