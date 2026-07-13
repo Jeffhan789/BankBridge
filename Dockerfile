@@ -8,7 +8,7 @@ RUN mvn -q clean package
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 RUN useradd --system --uid 10001 bankbridge
-COPY --from=build /workspace/target/bankbridge-0.2.0.jar app.jar
+COPY --from=build /workspace/target/bankbridge-0.3.0.jar app.jar
 USER bankbridge
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
