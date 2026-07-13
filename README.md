@@ -176,6 +176,11 @@ curl 'http://localhost:8080/api/compliance-reports/daily'
 - [Security boundaries](docs/security-boundaries.md)
 - [Test scenarios](docs/test-scenarios.md)
 - [English client walkthrough](docs/client-walkthrough-en.md)
+- [快速上手指南](docs/quick-start-guide.md)
+- **v0.2.0 核心原理教学**
+  - [01-幂等性原理与实现](docs/teaching/01-idempotency.md)
+  - [02-事务发件箱模式（Outbox Pattern）](docs/teaching/02-outbox-pattern.md)
+  - [03-指数退避重试与死信队列](docs/teaching/03-retry-dead-letter.md)
 - [中文详细路线图](docs/roadmap-zh.md)
 
 ## 中文项目介绍
