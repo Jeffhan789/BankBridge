@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.bankbridge.api.PaymentModels;
 import io.bankbridge.messaging.SettlementMessage;
 import io.bankbridge.service.PaymentSettlementWorker;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -17,6 +18,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -41,10 +43,21 @@ class PaymentApiIntegrationTest {
     @MockBean RabbitAdmin rabbitAdmin;
     @MockBean RabbitTemplate rabbitTemplate;
 
+    private SecurityTestBase security;
+    private String operatorToken;
+    private String auditorToken;
+
+    @BeforeEach
+    void setUp() throws Exception {
+        security = new SecurityTestBase(mockMvc, objectMapper);
+        operatorToken = security.loginAs("operator001", "operator001");
+        auditorToken = security.loginAs("auditor001", "auditor001");
+    }
+
     @Test
     void acceptedPaymentIsAcceptedAndSettlesAsynchronously() throws Exception {
         PaymentModels.CreatePaymentRequest request = validRequest("ACCEPT");
-        MvcResult postResult = mockMvc.perform(post("/api/payments")
+        MvcResult postResult = mockMvc.perform(withAuth(post("/api/payments"), operatorToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsBytes(request)))
                 .andExpect(status().isCreated())
@@ -67,7 +80,7 @@ class PaymentApiIntegrationTest {
                 Instant.now()
         ));
 
-        mockMvc.perform(get("/api/payments/" + paymentId))
+        mockMvc.perform(withAuth(get("/api/payments/" + paymentId), operatorToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("SETTLED"))
                 .andExpect(jsonPath("$.ledgerEntries", hasSize(2)))
@@ -82,7 +95,7 @@ class PaymentApiIntegrationTest {
         PaymentModels.CreatePaymentRequest request = new PaymentModels.CreatePaymentRequest(
                 base.messageId(), base.debtorAccount(), "TEST-BLOCKED-001", base.amount(),
                 base.currency(), base.destinationCountry(), base.purposeCode(), base.requestedExecutionDate());
-        mockMvc.perform(post("/api/payments")
+        mockMvc.perform(withAuth(post("/api/payments"), operatorToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsBytes(request)))
                 .andExpect(status().isCreated())
@@ -97,7 +110,7 @@ class PaymentApiIntegrationTest {
         PaymentModels.CreatePaymentRequest request = new PaymentModels.CreatePaymentRequest(
                 base.messageId(), base.debtorAccount(), base.creditorAccount(), base.amount(),
                 base.currency(), "ZZ", base.purposeCode(), base.requestedExecutionDate());
-        mockMvc.perform(post("/api/payments")
+        mockMvc.perform(withAuth(post("/api/payments"), operatorToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsBytes(request)))
                 .andExpect(status().isCreated())
@@ -108,9 +121,11 @@ class PaymentApiIntegrationTest {
     @Test
     void duplicateMessageIdReturnsConflict() throws Exception {
         byte[] body = objectMapper.writeValueAsBytes(validRequest("DUPLICATE"));
-        mockMvc.perform(post("/api/payments").contentType(MediaType.APPLICATION_JSON).content(body))
+        mockMvc.perform(withAuth(post("/api/payments"), operatorToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isCreated());
-        mockMvc.perform(post("/api/payments").contentType(MediaType.APPLICATION_JSON).content(body))
+        mockMvc.perform(withAuth(post("/api/payments"), operatorToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.title").value("Duplicate payment message"));
     }
@@ -121,7 +136,7 @@ class PaymentApiIntegrationTest {
         PaymentModels.CreatePaymentRequest request = new PaymentModels.CreatePaymentRequest(
                 base.messageId(), base.debtorAccount(), base.creditorAccount(), BigDecimal.ZERO,
                 base.currency(), base.destinationCountry(), base.purposeCode(), base.requestedExecutionDate());
-        mockMvc.perform(post("/api/payments")
+        mockMvc.perform(withAuth(post("/api/payments"), operatorToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsBytes(request)))
                 .andExpect(status().isBadRequest());
@@ -135,7 +150,7 @@ class PaymentApiIntegrationTest {
                 + prefix + "-OK,TEST-D-1,TEST-C-1,100.00,CNY,SG,GOODS," + date + "\n"
                 + prefix + "-BAD,TEST-D-2,TEST-C-2,-1.00,CNY,GB,GOODS," + date + "\n";
         MockMultipartFile file = new MockMultipartFile("file", "payments.csv", "text/csv", csv.getBytes());
-        mockMvc.perform(multipart("/api/payment-batches").file(file))
+        mockMvc.perform(withAuth(multipart("/api/payment-batches"), operatorToken).file(file))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.status").value("COMPLETED_WITH_ERRORS"))
                 .andExpect(jsonPath("$.totalRecords").value(2))
@@ -146,7 +161,7 @@ class PaymentApiIntegrationTest {
     @Test
     void reconciliationRemainsBalancedAfterAsyncSettlement() throws Exception {
         PaymentModels.CreatePaymentRequest request = validRequest("RECON");
-        MvcResult postResult = mockMvc.perform(post("/api/payments")
+        MvcResult postResult = mockMvc.perform(withAuth(post("/api/payments"), operatorToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsBytes(request)))
                 .andExpect(status().isCreated())
@@ -165,7 +180,7 @@ class PaymentApiIntegrationTest {
                 Instant.now()
         ));
 
-        String response = mockMvc.perform(get("/api/reconciliation/daily")
+        String response = mockMvc.perform(withAuth(get("/api/reconciliation/daily"), auditorToken)
                         .param("date", LocalDate.now().toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.balanced").value(true))
@@ -180,5 +195,9 @@ class PaymentApiIntegrationTest {
         return new PaymentModels.CreatePaymentRequest("PAY-" + token, "TEST-DEBTOR-" + token,
                 "TEST-CREDITOR-" + token, new BigDecimal("12500.00"), "CNY", "SG",
                 "GOODS", LocalDate.now().plusDays(1));
+    }
+
+    private MockHttpServletRequestBuilder withAuth(MockHttpServletRequestBuilder builder, String token) {
+        return builder.header("Authorization", "Bearer " + token);
     }
 }
