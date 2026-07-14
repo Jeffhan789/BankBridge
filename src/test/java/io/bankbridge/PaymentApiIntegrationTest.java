@@ -150,7 +150,7 @@ class PaymentApiIntegrationTest {
                 + prefix + "-OK,TEST-D-1,TEST-C-1,100.00,CNY,SG,GOODS," + date + "\n"
                 + prefix + "-BAD,TEST-D-2,TEST-C-2,-1.00,CNY,GB,GOODS," + date + "\n";
         MockMultipartFile file = new MockMultipartFile("file", "payments.csv", "text/csv", csv.getBytes());
-        mockMvc.perform(withAuth(multipart("/api/payment-batches"), operatorToken).file(file))
+        mockMvc.perform(withAuth(multipart("/api/payment-batches").file(file), operatorToken))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.status").value("COMPLETED_WITH_ERRORS"))
                 .andExpect(jsonPath("$.totalRecords").value(2))

@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/payments")
 public class PaymentController {
@@ -29,34 +31,12 @@ public class PaymentController {
     }
 
     @PreAuthorize("hasAnyRole('OPERATOR', 'COMPLIANCE_ANALYST', 'AUDITOR', 'ADMIN')")
-    @GetMapping("/{id}")
-    public PaymentModels.PaymentResponse get(@PathVariable String id) {
-        return paymentService.get(id);
-    }
-}
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
-
-@RestController
-@RequestMapping("/api/payments")
-public class PaymentController {
-    private final PaymentService paymentService;
-
-    public PaymentController(PaymentService paymentService) {
-        this.paymentService = paymentService;
+    @GetMapping
+    public List<PaymentModels.PaymentResponse> list() {
+        return paymentService.list();
     }
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public PaymentModels.PaymentResponse create(@Valid @RequestBody PaymentModels.CreatePaymentRequest request) {
-        return paymentService.create(request);
-    }
-
+    @PreAuthorize("hasAnyRole('OPERATOR', 'COMPLIANCE_ANALYST', 'AUDITOR', 'ADMIN')")
     @GetMapping("/{id}")
     public PaymentModels.PaymentResponse get(@PathVariable String id) {
         return paymentService.get(id);

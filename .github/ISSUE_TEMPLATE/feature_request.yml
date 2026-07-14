@@ -1,0 +1,20 @@
+name: Feature request
+description: Propose a measurable payment, compliance, or platform capability
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    attributes:
+      label: Problem
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Proposed outcome and API behavior
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Security, compliance, and operational trade-offs
+    validations:
+      required: true

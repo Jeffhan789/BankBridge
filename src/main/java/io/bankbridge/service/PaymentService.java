@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Locale;
 
 @Service
@@ -103,6 +104,13 @@ public class PaymentService {
     public PaymentModels.PaymentResponse get(String id) {
         return response(paymentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found: " + id)));
+    }
+
+    @Transactional(readOnly = true)
+    public List<PaymentModels.PaymentResponse> list() {
+        return paymentRepository.findAll().stream()
+                .map(this::response)
+                .toList();
     }
 
     private ScreeningDecision screen(PaymentInstruction payment) {

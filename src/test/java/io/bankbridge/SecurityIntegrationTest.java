@@ -27,6 +27,15 @@ class SecurityIntegrationTest {
     }
 
     @Test
+    void publicOperationalEndpoints_doNotRequireAuthentication() throws Exception {
+        mockMvc.perform(get("/health"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api-docs"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
     void operator_canAccessPaymentEndpoints() throws Exception {
         SecurityTestBase security = new SecurityTestBase(mockMvc, objectMapper);
         String token = security.loginAs("operator001", "operator001");

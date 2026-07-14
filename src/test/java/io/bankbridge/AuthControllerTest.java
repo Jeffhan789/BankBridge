@@ -30,6 +30,7 @@ class AuthControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").exists())
                 .andExpect(jsonPath("$.tokenType").value("Bearer"))
+                .andExpect(jsonPath("$.expiresIn").value(3600))
                 .andExpect(jsonPath("$.username").value("operator001"))
                 .andExpect(jsonPath("$.role").value("OPERATOR"));
     }
@@ -50,7 +51,8 @@ class AuthControllerTest {
 
     @Test
     void me_withValidToken_returnsUserInfo() throws Exception {
-        String token = new SecurityTestBase(mockMvc, objectMapper).loginAs("auditor001", "auditor001");"auditor001", "auditor001");
+        String token = new SecurityTestBase(mockMvc, objectMapper)
+                .loginAs("auditor001", "auditor001");
 
         mockMvc.perform(get("/api/auth/me")
                         .header("Authorization", "Bearer " + token))

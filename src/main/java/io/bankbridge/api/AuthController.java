@@ -36,7 +36,7 @@ public class AuthController {
         String role = authentication.getAuthorities().iterator().next().getAuthority().replace("ROLE_", "");
 
         return ResponseEntity.ok(new AuthModels.AuthResponse(
-                token, "Bearer", 3600, request.username(), role
+                token, "Bearer", tokenProvider.getExpirationSeconds(), request.username(), role
         ));
     }
 

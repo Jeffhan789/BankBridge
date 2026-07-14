@@ -98,10 +98,4 @@ public class PaymentSettlementWorker {
         auditRepository.save(new AuditEvent("PAYMENT", payment.getId(), "STATUS_CHANGED",
                 status.name() + ": " + reason, "SYSTEM", "SYSTEM"));
     }
-        payment.setStatus(status, reason);
-        paymentRepository.save(payment);
-        statusEventRepository.save(new PaymentStatusEvent(payment.getId(), status, reason));
-        auditRepository.save(new AuditEvent("PAYMENT", payment.getId(), "STATUS_CHANGED",
-                status.name() + ": " + reason));
-    }
 }

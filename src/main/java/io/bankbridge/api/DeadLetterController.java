@@ -30,31 +30,12 @@ public class DeadLetterController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public DeadLetterModels.DeadLetterQueueInfo getDeadLetterQueueInfo() {
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-@RestController
-@RequestMapping("/api/dead-letters")
-public class DeadLetterController {
-
-    private static final Logger log = LoggerFactory.getLogger(DeadLetterController.class);
-
-    private final RabbitAdmin rabbitAdmin;
-    private final RabbitTemplate rabbitTemplate;
-
-    public DeadLetterController(RabbitAdmin rabbitAdmin, RabbitTemplate rabbitTemplate) {
-        this.rabbitAdmin = rabbitAdmin;
-        this.rabbitTemplate = rabbitTemplate;
-    }
-
-    @GetMapping
-    public DeadLetterModels.DeadLetterQueueInfo getDeadLetterQueueInfo() {
         QueueInformation info = rabbitAdmin.getQueueInfo("payment.settlement.dlq");
         long count = info != null ? info.getMessageCount() : 0;
         return new DeadLetterModels.DeadLetterQueueInfo("payment.settlement.dlq", count);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/replay")
     public DeadLetterModels.ReplayResponse replayDeadLetters() {
         int replayed = 0;

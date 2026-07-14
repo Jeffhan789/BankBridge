@@ -55,6 +55,10 @@ public class JwtTokenProvider {
         }
     }
 
+    public long getExpirationSeconds() {
+        return jwtExpirationMs / 1000;
+    }
+
     private Claims parseToken(String token) {
         return Jwts.parser()
                 .verifyWith(jwtSecretKey)
