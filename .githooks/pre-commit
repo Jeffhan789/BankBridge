@@ -1,0 +1,13 @@
+#!/bin/bash
+# pre-commit 防线：拦截疑似私人/学习/面试类文件进入 git 历史
+# 规则与 .gitignore 黑名单互补——即使用 git add -f 强制添加也会在此被拦下
+PATTERN='(私人|面试|学习|笔记|1\.2-|2\.2-|\.draft\.|interview[-_]notes|personal[-_]notes)'
+
+MATCHED=$(git -c core.quotepath=false diff --cached --name-only | grep -iE "$PATTERN")
+if [ -n "$MATCHED" ]; then
+  echo "❌ 提交已拦截：以下文件名命中私人内容黑名单"
+  echo "$MATCHED" | sed 's/^/   - /'
+  echo ""
+  echo "如确认内容要公开，请重命名去除敏感词后再提交。"
+  exit 1
+fi
