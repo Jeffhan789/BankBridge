@@ -136,8 +136,9 @@ The generated OpenAPI document is the source of truth for request and response f
 - [Batch processing flow](docs/batch-processing-flow.md)
 - [Security boundaries](docs/security-boundaries.md)
 - [Test scenarios](docs/test-scenarios.md)
-- [架构设计指南](架构设计指南.md)
-- [中文路线图](docs/roadmap-zh.md)
+- [Data dictionary](docs/data-dictionary.md)
+- [v0.3.0 security design](docs/design/v0.3.0-security-architecture.md)
+- [English client walkthrough](docs/client-walkthrough-en.md)
 
 ## 中文说明
 
@@ -153,7 +154,7 @@ BankBridge（汇桥）是一个跨境支付后端沙盒，用合成数据完整�
 - `v0.5`: performance baselines, resilience tests, deployment, and supply-chain checks.
 - `v1.0`: stable API, reproducible demo data, ADRs, and release documentation.
 
-Detailed acceptance criteria are tracked in the [Chinese roadmap](docs/roadmap-zh.md).
+Detailed acceptance criteria are tracked in the Chinese roadmap (maintained in the author's private notes).
 
 ## License
 
